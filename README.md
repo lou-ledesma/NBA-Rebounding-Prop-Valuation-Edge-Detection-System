@@ -64,6 +64,7 @@ Maintains authoritative mapping table for player identity, team affiliation, and
 ## Data Outputs
 
 ### 1. Performance Tracking Data (`SAMPLE - Performance Tracking Data (Looker).xlsx`)
+Link to Looker Dashboard: https://lookerstudio.google.com/s/vouaEROV4oA
 
 Underlying dataset feeding Looker analytics dashboards:
 
