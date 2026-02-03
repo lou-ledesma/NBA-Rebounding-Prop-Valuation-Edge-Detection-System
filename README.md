@@ -227,7 +227,7 @@ NBA-Rebounding-Prop-Valuation-Edge-Detection-System/
 
 ## Author
 
-**Lou Ledesma** | Senior Analytics Engineer
+**Lou Ledesma** | Analytics Engineer | https://www.linkedin.com/in/loubriel-ledesma/
 
 Specialized in quantitative analysis, predictive modeling, and building data-driven decision frameworks. This project demonstrates feature engineering rigor, statistical validation methodology, and operational data pipeline design.
 
