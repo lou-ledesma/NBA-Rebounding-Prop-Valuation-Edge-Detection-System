@@ -1,239 +1,126 @@
-# NBA Rebounding Prop Valuation & Edge Detection System
+# 🏀 NBA Rebounding Prop Valuation & Edge Detection System
 
-A production-grade Python analytics system that identifies undervalued/overvalued NBA rebounding prop bets through statistical modeling, feature engineering, and predictive analytics. Designed for actionable edge detection in sports betting markets.
+**Advanced Analytics | Predictive Modeling | Monte Carlo Simulation**
 
----
+How can player history, rebounding efficiency, and game context help us evaluate an NBA rebounding prop?
 
-## Overview
+This project explores that question through Python, linear regression, and simulation. It connects historical game logs to engineered features, simulated rebounding outcomes, and probability estimates across different prop lines.
 
-This project demonstrates end-to-end quantitative analysis: data ingestion → feature engineering → probabilistic modeling → market valuation. The system generates statistically-grounded probability distributions for NBA player rebounding performance, enabling comparative analysis against market odds and identification of profitable betting opportunities.
-
-### Key Capabilities
-
-- **Predictive Modeling**: Scikit-learn based regression models calibrated on historical NBA rebounding data
-- **Feature Engineering**: Domain-specific feature construction (opponent strength, pace adjustments, player role metrics, seasonal trends)
-- **Data Pipeline**: Automated web scraping, data transformation, and bulk execution across multiple players
-- **Player Tracking**: Dynamic player-to-team mapping system that accommodates mid-season trades and roster changes
-- **Performance Analytics**: Comparative analysis framework between model predictions and realized outcomes
+I built it to bring the analysis together: understand the data, model the relationships, explore a range of possible outcomes, and make the results easier to review.
 
 ---
 
-## Technical Architecture
+## 📖 About the Project
 
-### System Components
+A single prediction only tells part of the story. Minutes played, rebounding opportunities, and game pace can all vary, so this workflow looks beyond a point estimate to explore how simulated inputs affect predicted rebounds.
 
-#### 1. **Model Development & Validation** (`(1) - MAIN - NBA Rebounding Valuation - Model Logic.ipynb`)
+The notebooks combine:
 
-The core analytics engine containing:
-
-- **Data Preparation**: Historical rebounding datasets, feature normalization, handling missing values
-- **Feature Engineering**:
-  - Player-level metrics (usage rate, rebound share, positional role)
-  - Opponent-level metrics (defensive rebounding strength, pace of play)
-  - Contextual variables (home/away, back-to-back status, injury adjustments)
-- **Model Training**: Scikit-learn regression pipelines (linear regression, gradient boosting) with cross-validation
-- **Calibration & Backtesting**: Out-of-sample probability distribution validation
-- **Output**: Trained model artifacts and confidence intervals for individual player performance predictions
-
-**Technical Stack**: Python, Scikit-learn, Pandas, NumPy
-
-#### 2. **Bulk Execution Pipeline** (`(2) - Bulk Upload Execution.ipynb`)
-
-Operationalizes the core model logic for scalable, multi-player analysis:
-
-- Applies trained model logic sequentially across roster of NBA players
-- Generates probability distributions for each player's rebounding performance
-- Outputs structured datasets for downstream BI tooling (Looker dashboards)
-- Handles edge cases and data quality validation during batch processing
-
-**Use Case**: Daily/weekly updates across entire NBA league without manual re-execution
-
-#### 3. **Player Roster Management** (`(3) - Player URL Mapping Data.ipynb`)
-
-Maintains authoritative mapping table for player identity, team affiliation, and data source references:
-
-- Tracks player-to-team relationships with effective dates
-- Manages mid-season roster changes and trades
-- Indexes player URLs for web scraping operations
-- Enables consistent player identification across data sources and seasons
-
-**Business Value**: Ensures analytics remain current despite roster volatility; reduces data engineering overhead for identity matching
+- **Feature engineering:** Turn player and team game logs into measures of rebounding efficiency, opportunities, and pace.
+- **Predictive modeling:** Fit a scikit-learn linear regression model to historical player performance.
+- **Simulation:** Generate 250,000 scenarios using normally distributed feature draws and pass them through the model.
+- **Probability analysis:** Estimate the share of simulated predictions above or below a selected prop line.
+- **Analytical reporting:** Organize player summaries, prop probabilities, and game logs for further analysis in Excel and Looker Studio.
 
 ---
 
-## Data Outputs
+## 🧠 Inside the Analysis
 
-### 1. Performance Tracking Data (`SAMPLE - Performance Tracking Data (Looker).xlsx`)
-Link to Looker Dashboard: https://lookerstudio.google.com/s/vouaEROV4oA
+### 1. Prepare the Historical Data
 
-Underlying dataset feeding Looker analytics dashboards:
+The workflow retrieves player and team game logs from Basketball Reference, removes non-playing entries and repeated headers, standardizes data types, and joins player records with team statistics by date and team.
 
-- **Schema**: Player, Date, Team, Opponent, Minutes Played, Rebounds Actual, Model Prediction, Variance
-- **Grain**: Game-level rebounding performance
-- **Use Case**: Trend analysis, comparative metrics, historical benchmarking
+A separate mapping notebook assembles player names, source identifiers, positions, and teams to support those lookups.
 
-### 2. Prop Valuation & Probability Distribution (`SAMPLE - Prop Valuation and Probability Distribution.xlsx`)
+### 2. Build the Modeling Features
 
-Primary output file containing statistical analysis and market edge detection:
+The regression uses minutes played, rebounds per minute, a calculated rebounding rate, offensive and defensive rebounding ratios, estimated possessions, and home/away indicators.
 
-- **Prediction Metrics**:
-  - Point estimate (expected rebounds)
-  - Confidence intervals (68th, 90th, 95th percentiles)
-  - Probability of over/under specific line values (e.g., P(Rebounds > 8.5))
-  
-- **Market Comparison**:
-  - Sportsbook line vs. model prediction (basis analysis)
-  - Implied probability vs. statistical probability
-  - Edge magnitude and direction (+EV identification)
+These features connect the analysis to basketball context: how long a player is on the floor, how frequently they collect rebounds, and how many opportunities a game may create. The notebook includes the Basketball Reference source for its possessions formula.
 
-- **Data Transformations Applied**:
-  - Feature scaling and normalization
-  - Outlier handling and robust estimation
-  - Seasonal adjustment and trend components
-  - Position-specific benchmarking
+### 3. Fit a Regression Baseline
+
+The main notebook uses `LinearRegression` with an 80/20 random train/test split and calculates mean squared error on the held-out rows.
+
+This provides a baseline for exploring relationships in the historical data. It does not establish prospective forecasting accuracy on its own, particularly because some predictors are derived from the same game's rebound outcome.
+
+### 4. Explore Simulated Outcomes
+
+The simulation blends recent and earlier performance summaries to set feature means and uses observed standard deviations to generate normal draws. It then applies the regression model to 250,000 simulated feature combinations.
+
+The outputs include a median predicted rebound value and the fraction of predictions above or below a user-supplied line. A separate prop map repeats the over-probability calculation across half-point lines from 1 to 20.
+
+These are model-based scenario estimates. Their usefulness depends on the feature definitions, distribution assumptions, and validation of the underlying model.
 
 ---
 
-## Methodology & Analysis Framework
+## 📊 Explore the Outputs
 
-### Feature Engineering Pipeline
+- **[Looker Studio Dashboard](https://lookerstudio.google.com/s/vouaEROV4oA):** Explore the project's performance reporting.
+- **[Sample Performance Tracking Data](Data%20Outputs/SAMPLE%20-%20Performance%20Tracking%20Data%20%28Looker%29.xlsx):** Review the sample workbook associated with dashboard reporting.
+- **[Sample Prop Valuation & Probability Distribution](Data%20Outputs/SAMPLE%20-%20Prop%20Valuation%20and%20Probability%20Distribution.xlsx):** Explore the sample valuation and probability outputs.
 
-| Feature Category | Examples | Purpose |
-|---|---|---|
-| **Player Metrics** | Usage Rate, Rebound %, Positional Role | Capture individual player propensity and role |
-| **Opponent Metrics** | Defensive Rebounding %, Pace Rating | Account for defensive difficulty and game tempo |
-| **Contextual Variables** | Home/Away, Back-to-Back, Injury Status | Adjust for situational factors affecting performance |
-| **Time Series Components** | Seasonal trend, moving averages, momentum | Capture performance dynamics and form |
+The bulk execution notebook combines player-level results into an Excel workbook with **Details**, **Prop Spreads**, and **Player Gamelogs** tabs.
 
-### Model Validation Strategy
-
-- **Cross-Validation**: K-fold validation to assess generalization
-- **Backtesting**: Historical prediction accuracy against realized outcomes
-- **Calibration Analysis**: Probability distribution alignment (predicted vs. observed frequencies)
-- **Sensitivity Testing**: Feature importance ranking and prediction elasticity
-
-### Edge Detection Logic
-
-The system identifies profitable opportunities by comparing:
-1. **Model Probability** (P(Rebounds > Line) from statistical model)
-2. **Implied Probability** (derived from sportsbook odds)
-3. **Expected Value**: EV = (Model Prob × Payout) - (1 - Model Prob) × Stake
-
-Bets with positive EV above a confidence threshold are flagged for consideration.
+The valuation focus is on comparing modeled outcomes with a selected prop line. The published notebooks do not calculate sportsbook implied probabilities, expected value, or automated profitable-bet flags.
 
 ---
 
-## Usage & Workflow
+## 🛠️ Explore the Notebooks
 
-### Quick Start
+### [1. Model Logic](Python%20Scripts/%281%29%20-%20MAIN%20-%20NBA%20Rebounding%20Valuation%20-%20Model%20Logic.ipynb)
 
-1. **Initial Model Development**: Run `(1) - MAIN - NBA Rebounding Valuation - Model Logic.ipynb`
-   - Loads historical data, engineers features, trains model
-   - Outputs trained model artifacts
+The main analytical workflow: data preparation, feature calculations, regression fitting, Monte Carlo simulation, and player-level probability outputs. Start here to follow the modeling logic.
 
-2. **Bulk Execution**: Run `(2) - Bulk Upload Execution.ipynb`
-   - Applies model across current NBA roster
-   - Generates `Prop Valuation and Probability Distribution.xlsx`
+### [2. Bulk Upload Execution](Python%20Scripts/%282%29%20-%20Bulk%20Upload%20Execution.ipynb)
 
-3. **Update Player Mapping** (as needed): Run `(3) - Player URL Mapping Data.ipynb`
-   - Sync roster changes and trade information
-   - Refresh player identifiers for web scraping
+Reads a player input sheet, runs the model notebook for each entry, and combines the results into reporting workbooks.
 
-4. **Analytics & Dashboard**: Load outputs into Looker
-   - Connect `Performance Tracking Data (Looker).xlsx` for trend dashboards
-   - Reference `Prop Valuation and Probability Distribution.xlsx` for opportunity identification
+### [3. Player URL Mapping Data](Python%20Scripts/%283%29%20-%20Player%20URL%20Mapping%20Data.ipynb)
 
-### Data Refresh Frequency
+Builds a reference workbook of player names, Basketball Reference identifiers, positions, and teams from the selected season's data.
 
-- **Daily**: Bulk execution pipeline (post-games) to update realized outcomes
-- **Weekly**: Model retraining to incorporate recent performance data
-- **As-Needed**: Player mapping updates following trades/roster moves
+**A note on setup:** These notebooks were part of a wider local workflow and are shared here to showcase the analytical logic. Running them requires the external reference workbook and player input sheet, compatible dependencies, and updates to local paths, season settings, and the bulk notebook's referenced filename. They are not a standalone application with a one-step setup.
 
 ---
 
-## Key Technical Decisions
+## 🔍 Modeling Considerations & Next Steps
 
-### Why Scikit-learn?
+The most useful next step is stronger evaluation of the forecasting assumptions:
 
-- Fast iteration and experimentation during model development
-- Robust cross-validation and hyperparameter tuning utilities
-- Transparent model interpretability (feature importance, coefficients)
-- Sufficient for linear and tree-based regression tasks
+- **Prevent target leakage:** Replace same-game outcome-derived predictors with features available before tipoff.
+- **Validate over time:** Use chronological holdouts or rolling backtests instead of relying on a random split.
+- **Evaluate probabilities:** Check calibration against observed outcomes before interpreting simulated proportions as reliable betting probabilities.
+- **Refine simulation assumptions:** Account for relationships between features and realistic bounds on minutes, ratios, and rebound predictions. The current feature draws are independent and unbounded.
+- **Make comparisons reproducible:** Seed the simulations and compare results against simple historical baselines.
 
-### Data Quality & Error Handling
-
-- Handles missing data through imputation and interpolation strategies
-- Validates feature distributions and flags anomalies
-- Implements bounds checking for physically implausible predictions
-- Maintains audit trail of data transformations for reproducibility
-
-### Player Mapping as a Separate Layer
-
-- Decouples identity/reference data from analytical logic
-- Enables rapid roster synchronization without retraining models
-- Supports multiple downstream use cases (scraping, scheduling, analytics)
-- Reduces brittle joins across disparate data sources
+These are opportunities to extend the analysis, not capabilities already implemented in the notebooks.
 
 ---
 
-## Business Context & Applications
+## 🧰 Tools Used
 
-This system demonstrates practical quantitative analysis applied to real-world markets:
-
-- **Statistical Rigor**: Probability distributions grounded in historical data and cross-validation
-- **Operational Efficiency**: Automated bulk processing eliminates manual re-execution
-- **Dynamic Adaptation**: Roster tracking ensures analytics remain current despite roster volatility
-- **Actionable Output**: Clear valuation metrics enable rapid opportunity assessment
-
-### Extensions & Future Work
-
-- Incorporate in-game context (score differential, quarter) for live prop adjustments
-- Expand to additional prop markets (assists, points, player combinations)
-- Integrate betting exchange API for real-time line monitoring
-- Implement Bayesian hierarchical models for enhanced uncertainty quantification
+- **Analysis & data preparation:** Python, pandas, NumPy
+- **Predictive modeling:** scikit-learn
+- **Simulation:** SciPy's normal distribution functions and NumPy
+- **Data collection:** Requests, Beautiful Soup
+- **Exploration & reporting:** Jupyter Notebooks, Excel, Looker Studio
 
 ---
 
-## Tools & Dependencies
+## 🔌 Let's Connect
 
-| Component | Purpose |
-|---|---|
-| **Python 3.8+** | Core scripting and orchestration |
-| **Scikit-learn** | Statistical modeling and validation |
-| **Pandas** | Data manipulation and transformation |
-| **NumPy** | Numerical computation and array operations |
-| **Web Scraping Libraries** | Data ingestion from NBA/sportsbook sources |
-| **Looker** | Dashboard and analytics visualization |
-| **Excel/Google Sheets** | Output file format for stakeholder accessibility |
+**Lou Ledesma | Full-Stack Data Analyst 📊 | Full-Stack Data Scientist 🧠**
 
----
+I enjoy working through questions like this, from messy source data to models and results we can inspect. If you're interested in advanced analytics, sports data, or predictive modeling, I'd be happy to connect.
 
-## Project Structure
+- [LinkedIn](https://www.linkedin.com/in/lou-ledesma/)
+- [GitHub](https://github.com/lou-ledesma)
 
-```
-NBA-Rebounding-Prop-Valuation-Edge-Detection-System/
-│
-├── Python Scripts/
-│   ├── (1) - MAIN - NBA Rebounding Valuation - Model Logic.ipynb
-│   ├── (2) - Bulk Upload Execution.ipynb
-│   └── (3) - Player URL Mapping Data.ipynb
-│
-└── Data Outputs/
-    ├── SAMPLE - Performance Tracking Data (Looker).xlsx
-    └── SAMPLE - Prop Valuation and Probability Distribution.xlsx
-```
+Thanks for taking a look! Feel free to explore the notebooks and leave a ⭐ if you find the project interesting.
 
 ---
 
-## Author
+## Project Note
 
-**Lou Ledesma** | Analytics Engineer | https://www.linkedin.com/in/loubriel-ledesma/
-
-Specialized in quantitative analysis, predictive modeling, and building data-driven decision frameworks. This project demonstrates feature engineering rigor, statistical validation methodology, and operational data pipeline design.
-
----
-
-## Disclaimers
-
-1. This project is for educational and analytical purposes. Sports betting involves financial risk. Users should conduct their own analysis and adhere to applicable gambling regulations in their jurisdiction.
-2. README.md file description was generated using Perplexity AI.
+This project is for educational and analytical purposes. Its outputs do not establish a profitable betting strategy or guarantee future outcomes.
